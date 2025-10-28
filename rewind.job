@@ -1,0 +1,48 @@
+#!/bin/bash
+#SBATCH --account=biyik_1165
+#SBATCH --partition=gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --gpus-per-task=p100:2
+#SBATCH --mem=64G
+#SBATCH --time=24:00:00
+#!/bin/bash
+
+nvidia-smi
+
+source ~/miniconda3/etc/profile.d/conda.sh
+#cd ReWiND_Release/
+#bash -i setup_ReWiND_env.sh
+conda activate rewind
+#conda install -y -c conda-forge libglu glew glfw xorg-libx11 xorg-libxext xorg-libxi xorg-libxrandr xorg-libxrender xorg-libxfixes
+conda install -c conda-forge libgl
+
+module load gcc/13.3.0
+#module load glew/2.2.0
+#module load glu
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/nvidia
+export PATH=$CONDA_PREFIX/bin:$PATH
+export PYTHONNOUSERSITE=1
+
+
+# Download preprocessed OpenX DinoV2 Embeddings
+#ulimit -n
+#ulimit -n 10240
+#python download_data.py
+
+#pip install opencv-python
+echo "--- (1) 현재 Conda 환경 ---"
+conda info --envs
+echo "--- (2) 활성화된 파이썬 경로 ---"
+which python
+echo "--- (3) 활성화된 pip 경로 ---"
+which pip
+
+
+
+# Generate Metaworld trajectories
+python data_generation/metaworld_generation.py
+# Centercrop the videos and convert to DinoV2 features
+#python data_preprocessing/metaworld_center_crop.py
+#python data_preprocessing/generate_dino_embeddings.py
